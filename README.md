@@ -1,12 +1,12 @@
 # Hinglish Sentiment Analysis
 
-A sentiment analysis system built for Hinglish text (a mix of Hindi and English). It classifies text as **positive** or **negative** using a transformer-based NLP model.
+A sentiment analysis system built to classify Hinglish (Hindi + English mixed) text into **Positive**, **Negative**, and **Neutral** sentiments using the IndicBERT transformer model.
 
 ---
 
 ## What is Hinglish?
 
-Hinglish is an informal blend of Hindi and English commonly used in social media, chats, and everyday conversations in India. Traditional NLP models struggle with this type of text, so this project focuses specifically on handling it.
+Hinglish is a blend of Hindi and English commonly used in everyday conversations, social media, chats, and comments in India. Example: *"yaar ye phone bahut acha hai!"* or *"I am so happy aaj!"*
 
 ---
 
@@ -15,112 +15,140 @@ Hinglish is an informal blend of Hindi and English commonly used in social media
 ```
 hinglish-sentiment-analysis/
 │
-├── raw_posts.json           # Original dataset
-├── enriched_posts.json      # Expanded and enriched dataset
-├── prepare_dataset.py       # Script to preprocess data and create CSV
-├── train.py                 # Script to train the model
-├── predict.py               # Script to run predictions
-└── .gitignore
+├── dataset/
+│   └── hinglish_sentiment.csv    # 3500+ labeled Hinglish sentences
+│
+├── model/                         # Trained IndicBERT model weights
+├── results/                       # Training checkpoints
+├── app/                           # Web app (coming soon)
+│
+├── raw_posts.json                 # Raw social media posts
+├── enriched_posts.json            # Enriched post data
+├── prepare_dataset.py             # Converts JSON to CSV dataset
+├── train.py                       # Model training script
+├── predict.py                     # Run predictions on text input
+└── requirements.txt
 ```
 
 ---
 
 ## Dataset
 
-- The dataset was manually created in JSON format
-- It contains Hinglish sentences from everyday conversations and social media
-- Two versions are available:
-  - `raw_posts.json` — original collected posts
-  - `enriched_posts.json` — expanded version with more diverse examples
-- Labels are assigned based on engagement score:
-  - `engagement > 500` → **positive**
-  - `engagement > 150` → **neutral**
-  - `engagement <= 150` → **negative**
-- Neutral labels are removed during training (binary classification only)
+Custom dataset created manually with **3500+ Hinglish sentences** covering:
+
+- Workplace situations
+- Student life
+- Relationships
+- Social media and internet slang
+- Mixed English-Hindi expressions
+
+| Label | Count |
+|-------|-------|
+| Positive | ~1100 |
+| Negative | ~1200 |
+| Neutral | ~1200 |
 
 ---
 
-## Model Used
+## Model
 
-- **Model:** `bert-base-multilingual-cased`
-- **Framework:** HuggingFace Transformers
-- **Type:** Sequence Classification (2 labels — positive, negative)
-- **Why this model?** It supports multiple languages including Hindi and English, making it suitable for Hinglish text
+Uses **IndicBERT** (`ai4bharat/indic-bert`) — a multilingual ALBERT model pretrained on 12 Indian languages including Hindi. Fine-tuned on the custom Hinglish dataset for 3-class sentiment classification.
+
+| Parameter | Value |
+|-----------|-------|
+| Model | ai4bharat/indic-bert |
+| Epochs | 7 |
+| Batch Size | 8 |
+| Learning Rate | 2e-5 |
+| Max Sequence Length | 64 |
 
 ---
 
-## How to Run
+## Setup
 
-### 1. Clone the repository
-
+**1. Clone the repo**
 ```bash
-git clone https://github.com/adarshnayak777-debug/hinglish-sentiment-analysis.git
+git clone https://github.com/your-username/hinglish-sentiment-analysis.git
 cd hinglish-sentiment-analysis
 ```
 
-### 2. Install dependencies
-
+**2. Create virtual environment**
 ```bash
-pip install transformers datasets pandas scikit-learn torch
+python -m venv venv
+venv\Scripts\activate        # Windows
+source venv/bin/activate     # Mac/Linux
 ```
 
-### 3. Prepare the dataset
-
+**3. Install dependencies**
 ```bash
-python prepare_dataset.py
+pip install transformers datasets scikit-learn pandas torch
+pip install protobuf tiktoken
 ```
 
-This will generate `hinglish_sentiment.csv` inside a `dataset/` folder.
-
-### 4. Train the model
-
+**4. Login to HuggingFace** (required for IndicBERT)
 ```bash
-python train.py
+python -c "from huggingface_hub import login; login(token='your_hf_token')"
 ```
 
-This will train the model and save it in the `model/` folder.
+> Request access to IndicBERT at: https://huggingface.co/ai4bharat/indic-bert
 
-### 5. Run predictions
+---
+
+## Training
+
+```bash
+python prepare_dataset.py    # prepare the dataset first
+python train.py              # train the model (takes 2-4 hours on CPU)
+```
+
+---
+
+## Prediction
 
 ```bash
 python predict.py
 ```
 
-Enter any Hinglish text and it will predict the sentiment.
-
----
-
-## Example
-
+Example output:
 ```
-Enter Hinglish text: yaar job mil gayi finally!
+Enter Hinglish text: mai khush hoon
 Sentiment: positive
+
+Enter Hinglish text: hatt! pagal
+Sentiment: negative
+
+Enter Hinglish text: aaj office mein meeting thi
+Sentiment: neutral
 ```
 
 ---
 
 ## Challenges
 
-- No standard Hinglish dataset available publicly
-- High variability in language usage and spelling
-- Limited computational resources (CPU-only training)
-- Labeling ambiguous sentences was difficult
+- No standard Hinglish dataset available — built from scratch
+- IndicBERT is a gated model — requires HuggingFace authentication
+- CPU-only training — each run takes 3-4 hours
+- High language variability — slang, abbreviations, mixed scripts
 
 ---
 
-## Future Improvements
+## Future Work
 
-- Add more data to improve accuracy
-- Build a simple web interface for real-time predictions
-- Try other multilingual models like IndicBERT or MuRIL
-- Add neutral sentiment back as a third class
+- Build a web interface for real-time predictions
+- Train on GPU for faster and more epochs
+- Expand dataset further
+- Support more Indian language code-switching patterns
 
 ---
 
-## Tech Stack
+## References
 
-- Python
-- HuggingFace Transformers
-- PyTorch
-- Pandas
-- Scikit-learn
+- Kakwani et al. (2020). IndicNLPSuite — https://huggingface.co/ai4bharat/indic-bert
+- Devlin et al. (2019). BERT: Pre-training of Deep Bidirectional Transformers
+- HuggingFace Transformers — https://huggingface.co/docs/transformers
+
+---
+
+## Author
+
+Made by Adarsh.
